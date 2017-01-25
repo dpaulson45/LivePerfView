@@ -496,7 +496,7 @@ param(
         $serverObj.HealthReport = $hReport
         $serverObj.CounterData = $counterData
         $aServerObjects += $serverObj 
-        Write-Verbose "Finished building server object $server" 
+        Write-VerboseOutput "Finished building server object $server" 
     }
 
     return $aServerObjects 
@@ -1033,13 +1033,13 @@ Function Detect-Issue{
 Param(
 [Parameter(Mandatory=$true,Position=1)]$aObject)
 
-    Write-Verbose "Entering the detect issues function"
+    Write-VerboseOutput "Entering the detect issues function"
     foreach($srvObj in $aObject){
         foreach($CounterDataObject in $srvObj.CounterData){
             switch($CounterDataObject.CounterSet.DetectIssueType) {
-            "DeepGreaterThanThresholdCheck" {Write-Verbose "Working on server $srvObj. It was selected for DeepGreaterThanThresholdCheck"; Detect-IssueDeepGtThresholdCheck $CounterDataObject}
-            "NormalGreaterThanThresholdCheck" {Write-Verbose "Working on server $srvObj. It was selected for NormalGreaterThanThresholdCheck"; Detect-IssueNormalGtThresholdCheck $CounterDataObject}
-            "NormalLessThanThresholdCheck" {Write-Verbose "Working on server $srvObj. It was selected for NormalLessThanThresholdCheck"; Detect-NormalLessThanThresholdCheck $CounterDataObject}
+            "DeepGreaterThanThresholdCheck" {Write-VerboseOutput "Working on server $srvObj. It was selected for DeepGreaterThanThresholdCheck"; Detect-IssueDeepGtThresholdCheck $CounterDataObject}
+            "NormalGreaterThanThresholdCheck" {Write-VerboseOutput "Working on server $srvObj. It was selected for NormalGreaterThanThresholdCheck";}# Detect-IssueNormalGtThresholdCheck $CounterDataObject}
+            "NormalLessThanThresholdCheck" {Write-VerboseOutput "Working on server $srvObj. It was selected for NormalLessThanThresholdCheck";} #Detect-NormalLessThanThresholdCheck $CounterDataObject}
             default {Write-Error "Something went wrong"; Write-ToLogScript "Error in Detect-Issues"; Write-ToLogScript $CounterDataObject.CounterSet.DetectIssueType}
             }
         }
@@ -1052,14 +1052,14 @@ param(
 [Parameter(Mandatory=$true,Position=1)][int]$iWeightValue,
 [Parameter(Mandatory=$true,Position=2)][array]$Array_Levels,
 [Parameter(Mandatory=$true,Position=3)][int]$LevelStartValue)
-    Write-Verbose "Function Get-HealthLevelFromWeightValue"
-    Write-Verbose "WeightValue provided: $iWeightValue" 
+    Write-VerboseOutput "Function Get-HealthLevelFromWeightValue"
+    Write-VerboseOutput "WeightValue provided: $iWeightValue" 
 
     if($Array_Levels.Count -lt 2){Write-Error "Don't know how to handle this low value"}
     $iFirst_Index = 0
     $iSecond_Index = 1
     $iMax_Index = $Array_Levels.Count 
-    if($iWeightValue -lt $Array_Levels[$iFirst_Index]){$wv = "iWeightValue (" + $iWeightValue + ") is less than the first array level of " + $Array_Levels[$iFirst_Index] + ". Returning the default value minus 1 " + --$LevelStartValue; Write-Verbose $wv; return $LevelStartValue}
+    if($iWeightValue -lt $Array_Levels[$iFirst_Index]){$wv = "iWeightValue (" + $iWeightValue + ") is less than the first array level of " + $Array_Levels[$iFirst_Index] + ". Returning the default value minus 1 " + --$LevelStartValue; Write-VerboseOutput $wv; return $LevelStartValue}
     while($iFirst_Index -lt $iMax_Index){
         if($iSecond_Index -ne $iMax_Index){
             if($iWeightValue -ge $Array_Levels[$iFirst_Index] -and $iWeightValue -lt $Array_Levels[$iSecond_Index]){break}
@@ -1069,12 +1069,12 @@ param(
             break;
         }
         $wv = "iWeightvalue (" + $iWeightValue + ") is not equal or greater than " + $Array_Levels[$iFirst_Index] + " AND less than " + $Array_Levels[$iSecond_Index]
-        Write-Verbose $wv
+        Write-VerboseOutput $wv
         $iFirst_Index++
         $iSecond_Index++
         $LevelStartValue++
     }
-    Write-Verbose "Returning level $LevelStartValue" 
+    Write-VerboseOutput "Returning level $LevelStartValue" 
     return $LevelStartValue
 }
 
@@ -1085,8 +1085,8 @@ param(
 [Parameter(Mandatory=$true,Position=2)]$To_Log,
 [Parameter(Mandatory=$true,Position=3)]$Health_Level,
 [Parameter(Mandatory=$true,Position=4)][string]$Default_Display_Results)
-    Write-Verbose "Function Update Health Report Instance Object" 
-    Write-Verbose "Health Level: $Health_Level"
+    Write-VerboseOutput "Function Update Health Report Instance Object" 
+    Write-VerboseOutput "Health Level: $Health_Level"
     
     $old_Health_Status = $Instance_Object.HealthReport.Status
     $new_Health_Status = Get-NameFromHealthLevel -iLevel $Health_Level
@@ -1100,13 +1100,13 @@ param(
         Write-ToLogScript $Instance_Object.HistoryValues 
         $ToLog = "[INFO]: Status changed from: '$old_Health_Status' to '$new_Health_Status'"
         Write-ToLogScript $ToLog
-        Write-Verbose $ToLog
+        Write-VerboseOutput $ToLog
         $ToLog = "[INFO]: Last Change Time was at: '$old_Health_Change_Time'"
         Write-ToLogScript $ToLog
-        Write-Verbose $ToLog
+        Write-VerboseOutput $ToLog
         $ToLog = "[INFO]: New Health Change Time: '$new_Health_Change_Time'"
         Write-ToLogScript $ToLog
-        Write-Verbose $ToLog
+        Write-VerboseOutput $ToLog
         #Now we need to set the object instance to show this update 
         $Instance_Object.HealthReport.Status = $new_Health_Status
         $Instance_Object.HealthReport.LastChangeTime = $new_Health_Change_Time
@@ -1151,7 +1151,7 @@ Health Levels
 Function Detect-IssueDeepGtThresholdCheck{
 param(
 [Parameter(Mandatory=$true,Position=1)]$CounterDataObject)
-    Write-Verbose "Function Detect-IssuesDeepGtThresholdCheck"
+    Write-VerboseOutput "Function Detect-IssuesDeepGtThresholdCheck"
     #First we are going to set all the Threshold Values and default varialables that we will use in the function 
     $threshold_Max = $CounterDataObject.CounterSet.Threshold.MaxSpike
     $threshold_Warning = $CounterDataObject.CounterSet.Threshold.WarningSpike
@@ -1176,30 +1176,30 @@ param(
     Function Get-PrivateHealthLevelCounter{
 
         #We shouldn't care if either of these are null the math should still be the same 
-        Write-Verbose "Either d_Max_Spikes or Max_Spikes or both were not null"
-        Write-Verbose "Determining the values to add"
+        Write-VerboseOutput "Either d_Max_Spikes or Max_Spikes or both were not null"
+        Write-VerboseOutput "Determining the values to add"
         #If we have values in both of them, we need to determene how many values we have in each threshold. 
         $d_Max_Spikes_Count = $d_Max_Spikes.count
-        Write-Verbose "d_Max_Spikes_count: $d_Max_Spikes_Count"
+        Write-VerboseOutput "d_Max_Spikes_count: $d_Max_Spikes_Count"
         $Max_Spikes_Count = $Max_Spikes.count - $d_Max_Spikes_Count #We don't want to count these twice 
-        Write-Verbose "Max_Spikes_Count: $Max_Spikes_Count"
+        Write-VerboseOutput "Max_Spikes_Count: $Max_Spikes_Count"
         $Warning_Spikes_Count = $aSpikes.count - $d_Max_Spikes_Count - $Max_Spikes_Count
-        Write-Verbose "Warning_Spikes_Count: $Warning_Spikes_Count" 
-        Write-Verbose "Current value of iHealthCounter: $iHealthCounter" 
+        Write-VerboseOutput "Warning_Spikes_Count: $Warning_Spikes_Count" 
+        Write-VerboseOutput "Current value of iHealthCounter: $iHealthCounter" 
         $iHealthCounter = $iHealthCounter + ($d_Max_Spikes_Count * $weight_Threshold_Double_MaxThreshold) + ($Max_Spikes_Count * $weight_Threshold_MaxThreshold) + ($Warning_Spikes_Count + $weight_Threshold_Warning)
-        Write-Verbose "iHealthCounter end result: $iHealthCounter"
+        Write-VerboseOutput "iHealthCounter end result: $iHealthCounter"
 
         return $iHealthCounter 
     }
 
     Function Get-PrivateHealthLevelCounterNoValuesOverMaxThreshold{
         #We don't have any major spikes but we still need to determine the value of the Warning spikes 
-        Write-Verbose "No major spikes over the Max Threshold"
-        Write-Verbose "Checking the warning spikes to see if we need to increase the health of the counter" 
+        Write-VerboseOutput "No major spikes over the Max Threshold"
+        Write-VerboseOutput "Checking the warning spikes to see if we need to increase the health of the counter" 
         $Warning_Spikes_Count = $aSpikes.count 
-        Write-Verbose "Warning_Spikes_Count: $Warning_Spikes_Count"
+        Write-VerboseOutput "Warning_Spikes_Count: $Warning_Spikes_Count"
         $iHealthCounter += ($weight_Threshold_Warning * $Warning_Spikes_Count)
-        Write-Verbose "iHealthCounter: $iHealthCounter" 
+        Write-VerboseOutput "iHealthCounter: $iHealthCounter" 
         return $iHealthCounter
     }
 
@@ -1219,21 +1219,21 @@ param(
         #First we are going to check if the Avgerage is above double the average limit 
         #If it is we need to mark that as critical. We should never be averaging that high 
         if($avgResults -ge $dThreshold_Avg) {
-            Write-Verbose "The avg is greater than double the Threshold Avg" 
-            Write-Verbose "avgResults: $avgResults   dThreshold_Avg: $dThreshold_Avg" 
+            Write-VerboseOutput "The avg is greater than double the Threshold Avg" 
+            Write-VerboseOutput "avgResults: $avgResults   dThreshold_Avg: $dThreshold_Avg" 
             $default_Display_Message = "[Critical]: " + $default_Server_Object_Counter_String + "This counter is currently above double the average threshold ( " + $dThreshold_Avg + " ). Current values " + $default_Display_Results 
-            Write-Verbose "Marking the instance as critical" 
+            Write-VerboseOutput "Marking the instance as critical" 
             $health_Level = 3 
         }#End $avgResults -ge $dThreshold_Avg
         
         elseif ($avgResults -ge $threshold_Avg) {
             #If the average results is above the threshold limit, we are going to at least mark this counter as degraded - Health Level One
-            Write-Verbose "The avg is greater than the Threshold Avg"
-            Write-Verbose "avgResults: $avgResults   threshold_Avg: $threshold_Avg"
+            Write-VerboseOutput "The avg is greater than the Threshold Avg"
+            Write-VerboseOutput "avgResults: $avgResults   threshold_Avg: $threshold_Avg"
             $iHealthCounter = $Health_Level_One # Setting the level to at least a one  
             #From there, will depend on if we have spikes above the Warning threshold limits or Max Threshold limits 
             if($aSpikes -ne $null){
-                Write-Verbose "We do have some spikes on this counter greater than the warning threshold looking into this" 
+                Write-VerboseOutput "We do have some spikes on this counter greater than the warning threshold looking into this" 
                 #We do have at least one instance of a spike occurrance. Now we need to determine if we have multiple and which kind.
                 $d_Max_Spikes = Get-ValuesAboveThresholdFromList -List $aSpikes -thresholdValue $dThreshold_Max
                 $Max_Spikes = Get-ValuesAboveThresholdFromList -List $aSpikes -thresholdValue $threshold_Max 
@@ -1267,8 +1267,8 @@ param(
         }#End $avgResults -ge $threshold_Avg
         else{
             #We are not above the Threshold avg so we are going to see if we have spikes and so on 
-            Write-Verbose "We are not above the average threshold for this counter" 
-            Write-Verbose "Checking to see if we have any spikes above the warning level" 
+            Write-VerboseOutput "We are not above the average threshold for this counter" 
+            Write-VerboseOutput "Checking to see if we have any spikes above the warning level" 
             $iHealthCounter = 0 # setting to 0 because we are below the threshold average from there we can increase if we have enough spikes 
             if($aSpikes -ne $null){
                 #We had some spikes now we need to see if we have some major spikes 
